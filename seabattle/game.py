@@ -43,6 +43,8 @@ class BaseGame(object):
         self.last_enemy_shot_position = None
         self.numbers = None
 
+        self.points_to_shot = []
+
     def start_new_game(self, size=10, field=None, ships=None, numbers=None):
         assert(size <= 10)
         assert(len(field) == size ** 2 if field is not None else True)
@@ -66,6 +68,8 @@ class BaseGame(object):
 
         self.last_shot_position = None
         self.last_enemy_shot_position = None
+
+        self.points_to_shot = [i for i, v in enumerate(self.enemy_field)]
 
     def generate_field(self):
         raise NotImplementedError()
@@ -139,11 +143,18 @@ class BaseGame(object):
         if message in ['hit', 'kill']:
             self.enemy_field[index] = SHIP
 
+            nearby_positions = self.get_nearby_positions(self.last_shot_position)
             if message == 'kill':
                 self.enemy_ships_count -= 1
+                self.fill_area([self.calc_index(position) for position in nearby_positions])
+                self.points_to_shot = [i for i, v in enumerate(self.enemy_field) if v == EMPTY]
+
+            self.points_to_shot = [self.calc_index(position) for position in nearby_positions
+                                   if self.enemy_field[self.calc_index(position)] == EMPTY]
 
         elif message == 'miss':
             self.enemy_field[index] = MISS
+            self.points_to_shot.remove(index)
 
     def calc_index(self, position):
         x, y = position
@@ -224,6 +235,26 @@ class BaseGame(object):
 
         return '%s, %s' % (x, y)
 
+    @staticmethod
+    def get_nearby_positions(x, y):
+        return [(x - 1, y - 1),
+                (x, y - 1),
+                (x + 1, y - 1),
+                (x + 1, y),
+                (x + 1, y + 1),
+                (x, y + 1),
+                (x - 1, y + 1),
+                (x - 1, y)]
+
+    def fill_area(self, indexes):
+        for index in indexes:
+            if index != SHIP:
+                self.enemy_field[index] = MISS
+            else:
+                x, y = self.calc_position(index)
+                nearby_positions = self.get_nearby_positions(x, y)
+                self.fill_area([self.calc_index(position) for position in nearby_positions])
+
 
 class Game(BaseGame):
     """Реализация игры с ипользованием обычного random"""
@@ -277,11 +308,7 @@ class Game(BaseGame):
             pass
 
     def do_shot(self):
-        """Метод выбора координаты выстрела.
-
-        ЕГО И НУЖНО ЗАМЕНИТЬ НА СВОЙ АЛГОРИТМ
-        """
-        index = random.choice([i for i, v in enumerate(self.enemy_field) if v == EMPTY])
+        index = random.choice(self.points_to_shot)
 
         self.last_shot_position = self.calc_position(index)
         return self.convert_from_position(self.last_shot_position)
