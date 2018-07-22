@@ -80,6 +80,7 @@ class DialogManager(object):
 
     def _handle_newgame(self, message, entities):
         self.game = game.Game()
+        self.game.reset_last_shot()
         self.session['game'] = self.game
         self.game.start_new_game(numbers=True)
         if entities:
@@ -98,6 +99,7 @@ class DialogManager(object):
     def _handle_letsstart(self, message, entities):
         if self.game is None:
             return self._get_dmresponse_by_key('need_init')
+        self.game.reset_last_shot()
         shot = self.game.do_shot()
         return self._get_shot_miss_dmresponse('shot', shot, with_opponent=True)
 
@@ -144,6 +146,7 @@ class DialogManager(object):
     def _handle_dontunderstand(self, message, entities):
         if self.game is None:
             return self._get_dmresponse_by_key('need_init')
+        self.game.reset_last_shot()
 
         if self.last.key in ['miss', 'shot']:
             shot = self.game.repeat()
