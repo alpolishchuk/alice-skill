@@ -143,18 +143,21 @@ class BaseGame(object):
         if message in ['hit', 'kill']:
             self.enemy_field[index] = SHIP
 
-            nearby_positions = self.get_nearby_positions(self.last_shot_position)
+            x, y = self.last_shot_position
+            nearby_positions = self.get_nearby_positions(x, y, include_cross_positions=False)
+            self.points_to_shot = [self.calc_index(position) for position in nearby_positions
+                                   if self.enemy_field[self.calc_index(position)] == EMPTY]
+
             if message == 'kill':
+                nearby_positions = self.get_nearby_positions(x, y)
                 self.enemy_ships_count -= 1
                 self.fill_area([self.calc_index(position) for position in nearby_positions])
                 self.points_to_shot = [i for i, v in enumerate(self.enemy_field) if v == EMPTY]
 
-            self.points_to_shot = [self.calc_index(position) for position in nearby_positions
-                                   if self.enemy_field[self.calc_index(position)] == EMPTY]
-
         elif message == 'miss':
             self.enemy_field[index] = MISS
-            self.points_to_shot.remove(index)
+            if index in self.points_to_shot:
+                self.points_to_shot.remove(index)
 
     def calc_index(self, position):
         x, y = position
@@ -236,24 +239,26 @@ class BaseGame(object):
         return '%s, %s' % (x, y)
 
     @staticmethod
-    def get_nearby_positions(x, y):
-        return [(x - 1, y - 1),
-                (x, y - 1),
-                (x + 1, y - 1),
-                (x + 1, y),
-                (x + 1, y + 1),
-                (x, y + 1),
-                (x - 1, y + 1),
-                (x - 1, y)]
+    def get_nearby_positions(x, y, include_cross_positions=True):
+        nearby_positions = [(x, y - 1), (x + 1, y), (x, y + 1), (x - 1, y)]
+        if include_cross_positions:
+            nearby_positions.extend([(x - 1, y - 1), (x + 1, y - 1), (x + 1, y + 1), (x - 1, y + 1)])
+        for item in nearby_positions:
+            a, b = item
+            if a > 10 or b > 10:
+                nearby_positions.remove(item)
+        return nearby_positions
 
-    def fill_area(self, indexes):
+    def fill_area(self, indexes, ship_indexes=[]):
         for index in indexes:
             if index != SHIP:
-                self.enemy_field[index] = MISS
+                if self.enemy_field[index] == EMPTY:
+                    self.enemy_field[index] = MISS
             else:
+                ship_indexes.append(index)
                 x, y = self.calc_position(index)
                 nearby_positions = self.get_nearby_positions(x, y)
-                self.fill_area([self.calc_index(position) for position in nearby_positions])
+                self.fill_area([self.calc_index(position) for position in nearby_positions], ship_indexes=ship_indexes)
 
 
 class Game(BaseGame):
