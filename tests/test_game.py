@@ -48,9 +48,6 @@ def test_helper_functions(game):
 
     assert game.convert_to_position('d пять') == (5, 5)
 
-    assert game.convert_to_position('1') == (1, 1)
-    assert game.convert_to_position('шесть') == (1, 6)
-
     assert game.convert_to_position('10 10') == (10, 10)
     assert game.convert_to_position('1 2') == (1, 2)
     assert game.convert_to_position('8 4') == (8, 4)
@@ -59,6 +56,9 @@ def test_helper_functions(game):
     assert game.convert_to_position('уже 4') == (7, 4)
     assert game.convert_to_position('the 4') == (8, 4)
     assert game.convert_to_position('за 4') == (8, 4)
+
+    with pytest.raises(ValueError):
+        assert game.convert_to_position('1') == (1, 1)
 
     with pytest.raises(ValueError):
         game.convert_to_position('т шесть')
@@ -93,7 +93,10 @@ def test_repeat(game):
 
 def test_handle_shot(game_with_field):
     assert game_with_field.handle_enemy_shot((4, 7)) == 'hit'
-    assert game_with_field.handle_enemy_shot((4, 7)) == 'miss'
+    assert game_with_field.handle_enemy_shot((4, 7)) == 'hit'
+
+    assert game_with_field.handle_enemy_shot((7, 1)) == 'kill'
+    assert game_with_field.handle_enemy_shot((7, 1)) == 'kill'
 
     assert game_with_field.handle_enemy_shot((4, 2)) == 'miss'
 

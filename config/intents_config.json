@@ -4,6 +4,11 @@
     "entity_synonyms": [],
     "common_examples": [
       {
+        "text": "новая игра",
+        "intent": "newgame",
+        "entities": []
+      },
+      {
         "text": "новая игра соперник алиса",
         "intent": "newgame",
         "entities": [
@@ -103,12 +108,12 @@
         "entities": []
       },
       {
-        "text": "я хожу д8",
+        "text": "я ухожу д8",
         "intent": "miss",
         "entities": [
           {
-            "start": 7,
-            "end": 9,
+            "start": 8,
+            "end": 10,
             "value": "д8",
             "entity": "hit_entity"
           }
@@ -247,12 +252,12 @@
         ]
       },
       {
-        "text": "я хожу 10 5",
+        "text": "я ухожу 10 5",
         "intent": "miss",
         "entities": [
           {
-            "start": 7,
-            "end": 11,
+            "start": 8,
+            "end": 12,
             "value": "10 5",
             "entity": "hit_entity"
           }
@@ -283,12 +288,12 @@
         ]
       },
       {
-        "text": "я хожу семь четыре",
+        "text": "я ухожу семь четыре",
         "intent": "miss",
         "entities": [
           {
-            "start": 7,
-            "end": 18,
+            "start": 8,
+            "end": 19,
             "value": "семь четыре",
             "entity": "hit_entity"
           }
@@ -326,6 +331,30 @@
             "start": 12,
             "end": 15,
             "value": "к 2",
+            "entity": "hit_entity"
+          }
+        ]
+      },
+      {
+        "text": "мимо я хожу трень трень",
+        "intent": "miss",
+        "entities": [
+          {
+            "start": 12,
+            "end": 23,
+            "value": "трень трень",
+            "entity": "hit_entity"
+          }
+        ]
+      },
+      {
+        "text": "я хожу трень трень",
+        "intent": "miss",
+        "entities": [
+          {
+            "start": 7,
+            "end": 18,
+            "value": "трень трень",
             "entity": "hit_entity"
           }
         ]
@@ -415,12 +444,17 @@
         ]
       },
       {
-        "text": "ранил",
+        "text": "ранила",
         "intent": "hit",
         "entities": []
       },
       {
-        "text": "попала",
+        "text": "ты попала",
+        "intent": "hit",
+        "entities": []
+      },
+      {
+        "text": "как ты попала",
         "intent": "hit",
         "entities": []
       },
@@ -430,7 +464,7 @@
         "entities": []
       },
       {
-        "text": "ранила",
+        "text": "ты ранила",
         "intent": "hit",
         "entities": []
       },
@@ -460,12 +494,32 @@
         "entities": []
       },
       {
+        "text": "корабли тону",
+        "intent": "kill",
+        "entities": []
+      },
+      {
         "text": "убила",
         "intent": "kill",
         "entities": []
       },
       {
         "text": "не поняла",
+        "intent": "dontunderstand",
+        "entities": []
+      },
+      {
+        "text": "повтори последнюю",
+        "intent": "dontunderstand",
+        "entities": []
+      },
+      {
+        "text": "я не поняла",
+        "intent": "dontunderstand",
+        "entities": []
+      },
+      {
+        "text": " я не понял",
         "intent": "dontunderstand",
         "entities": []
       },
@@ -480,7 +534,7 @@
         "entities": []
       },
       {
-        "text": "ничего не поняла повтори последний ход",
+        "text": "не поняла повтори последний ход",
         "intent": "dontunderstand",
         "entities": []
       },
@@ -501,6 +555,11 @@
       },
       {
         "text": "я проиграл",
+        "intent": "defeat",
+        "entities": []
+      },
+      {
+        "text": "я проиграла",
         "intent": "defeat",
         "entities": []
       },

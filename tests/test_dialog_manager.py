@@ -40,6 +40,10 @@ def defeat():
     return dm.MESSAGE_TEMPLATES['defeat']
 
 
+def opponent(name):
+    return '%s, ' % name
+
+
 def test_game_1():
     assert say('новая игра. соперник яндекс') == newgame('яндекс')
 
@@ -60,13 +64,13 @@ def test_game_1():
 
     session_obj['game'] = game
 
-    assert say('начинай') == shot(shots[0])
+    assert say('начинай') == opponent('яндекс') + shot(shots[0])
     assert say('мимо. я хожу б 2') == miss(shots[1])
     assert say('мимо. я хожу в 2') == hit()
     assert say('я хожу в 3') == kill()
     assert say('я хожу б 3') == miss(shots[2])
-    assert say('я не понял') == miss('2, 3')
-    assert say('ранил') == shot(shots[3])
-    assert say('убил') == shot(shots[4])
+    assert say('я не понял') == opponent('яндекс') + miss('2, 3')
+    assert say('ты попала') == shot(shots[3])
+    assert say('корабль утонул') == shot(shots[4])
     assert say('мимо. я хожу а 2') == kill()
     assert say('ура победа') == defeat()

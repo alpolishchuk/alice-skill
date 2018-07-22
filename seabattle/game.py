@@ -9,8 +9,8 @@ from transliterate import translit
 
 EMPTY = 0
 SHIP = 1
-HIT = 2
-BLOCKED = 3
+BLOCKED = 2
+HIT = 3
 MISS = 4
 
 
@@ -18,15 +18,17 @@ class BaseGame(object):
     position_patterns = [re.compile('^([a-zа-я]+)(\d+)$', re.UNICODE),  # a1
                          re.compile('^([a-zа-я]+)\s+(\w+)$', re.UNICODE),  # a 1; a один
                          re.compile('^(\w+)\s+(\w+)$', re.UNICODE),  # a 1; a один; 7 10
-                         re.compile('^(\w+)$', re.UNICODE)  # 1; один
                          ]
 
     str_letters = ['а', 'б', 'в', 'г', 'д', 'е', 'ж', 'з', 'и', 'к']
     str_numbers = ['один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять', 'десять']
 
-    letters_mapping = {'the': 'з',
-                       'за': 'з',
-                       'уже': 'ж'}
+    letters_mapping = {
+        'the': 'з',
+        'за': 'з',
+        'уже': 'ж',
+        'трень': '3',
+    }
 
     default_ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
 
@@ -75,17 +77,17 @@ class BaseGame(object):
         raise NotImplementedError()
 
     def print_field(self):
-        mapping = [' ', '0', 'x']
+        mapping = ['0', '1', 'x']
 
-        print '---'
+        print '-' * (self.size + 2)
         for y in range(self.size):
-            print '|%s|' % ''.join(mapping[x] for x in self.field[y * self.size: y * self.size + self.size])
-        print '---'
+            print '|%s|' % ''.join(mapping[x] for x in self.field[y * self.size: (y + 1) * self.size])
+        print '-' * (self.size + 2)
 
     def handle_enemy_shot(self, position):
         index = self.calc_index(position)
 
-        if self.field[index] == SHIP:
+        if self.field[index] in (SHIP, HIT):
             self.field[index] = HIT
 
             if self.is_dead_ship(index):
@@ -133,6 +135,9 @@ class BaseGame(object):
 
     def repeat(self):
         return self.convert_from_position(self.last_shot_position, numbers=True)
+
+    def reset_last_shot(self):
+        self.last_shot_position = None
 
     def handle_enemy_reply(self, message):
         if self.last_shot_position is None:
@@ -185,9 +190,6 @@ class BaseGame(object):
 
         bits = match.groups()
 
-        if len(bits) == 1:
-            bits = ('а', bits[0])
-
         def _try_letter(bit):
             # проверяем особые случаи неправильного распознования STT
             bit = self.letters_mapping.get(bit, bit)
@@ -201,6 +203,9 @@ class BaseGame(object):
                 raise
 
         def _try_number(bit):
+            # проверяем особые случаи неправильного распознования STT
+            bit = self.letters_mapping.get(bit, bit)
+
             if bit.isdigit():
                 return int(bit)
             else:
@@ -271,7 +276,7 @@ class Game(BaseGame):
         for length in self.ships:
             self.place_ship(length)
 
-        for i in range(0, len(self.field)):
+        for i in range(len(self.field)):
             if self.field[i] == BLOCKED:
                 self.field[i] = EMPTY
 
@@ -282,16 +287,17 @@ class Game(BaseGame):
             direction = random.choice([1, self.size])
 
             index = self.calc_index((x, y))
-            values = self.field[index:None if direction != 1 else index + self.size - index % self.size:direction][:length]
+            values = self.field[index:None if direction == self.size else index + self.size - index % self.size:direction][:length]
 
             if len(values) < length or any(values):
                 return False
 
-            for i in range(0, length):
+            for i in range(length):
                 current_index = index + direction * i
 
                 for j in [0, 1, -1]:
-                    if (current_index % self.size in (0, self.size - 1)
+                    if (j != 0
+                            and current_index % self.size in (0, self.size - 1)
                             and (current_index + j) % self.size in (0, self.size - 1)):
                         continue
 
