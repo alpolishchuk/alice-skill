@@ -85,8 +85,11 @@ class BaseGame(object):
         print '-' * (self.size + 2)
 
     def handle_enemy_shot(self, position):
-        index = self.calc_index(position)
+        x, y = position
+        if x > 10 or y > 10:
+            raise ValueError('Wrong position: %s %s' % (x, y))
 
+        index = self.calc_index(position)
         if self.field[index] in (SHIP, HIT):
             self.field[index] = HIT
 
