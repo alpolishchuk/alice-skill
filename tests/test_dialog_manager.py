@@ -55,7 +55,7 @@ def test_game_1():
                 gm.EMPTY, gm.EMPTY, gm.EMPTY,
                 gm.EMPTY, gm.SHIP,  gm.SHIP]
 
-    shots = ['а, 1', 'а, 2', 'б, 3', 'в, 3', 'а, 3']
+    shots = ['1, 1', '1, 2', '2, 3', '3, 3', '1, 3']
 
     game = gm.Game()
     game.start_new_game(3, field, [2, 1])
@@ -65,12 +65,12 @@ def test_game_1():
     session_obj['game'] = game
 
     assert say('начинай') == opponent('яндекс') + shot(shots[0])
-    assert say('мимо. я хожу б 2') == miss(shots[1])
-    assert say('мимо. я хожу в 2') == hit()
-    assert say('я хожу в 3') == kill()
-    assert say('я хожу б 3') == miss(shots[2])
+    assert say('мимо. я хожу 2 2') == miss(shots[1])
+    assert say('мимо. я хожу 3 2') == hit()
+    assert say('я хожу 3 3') == kill()
+    assert say('я хожу 2 3') == miss(shots[2])
     assert say('я не понял') == opponent('яндекс') + miss('2, 3')
     assert say('ты попала') == shot(shots[3])
     assert say('корабль утонул') == shot(shots[4])
-    assert say('мимо. я хожу а 2') == kill()
+    assert say('мимо. я хожу 1 2') == kill()
     assert say('ура победа') == defeat()

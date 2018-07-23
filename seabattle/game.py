@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import random
 import re
+import logging
 
 from transliterate import translit
 
@@ -12,6 +13,8 @@ SHIP = 1
 BLOCKED = 2
 HIT = 3
 MISS = 4
+
+log = logging.getLogger(__name__)
 
 
 class BaseGame(object):
@@ -76,21 +79,32 @@ class BaseGame(object):
     def generate_field(self):
         raise NotImplementedError()
 
-    def print_field(self):
-        mapping = ['0', '1', 'x']
+    def print_field(self, field=None):
+        if not self.size:
+            log.info('Empty field')
+            return
 
-        print '-' * (self.size + 2)
+        if field is None:
+            field = self.field
+
+        mapping = ['.', '1', '.', 'X', 'x']
+
+        lines = ['']
+        lines.append('-' * (self.size + 2))
         for y in range(self.size):
-            print '|%s|' % ''.join(mapping[x] for x in self.field[y * self.size: (y + 1) * self.size])
-        print '-' * (self.size + 2)
+            lines.append('|%s|' % ''.join(str(mapping[x]) for x in field[y * self.size: (y + 1) * self.size]))
+        lines.append('-' * (self.size + 2))
+        log.info('\n'.join(lines))
+
+    def print_enemy_field(self):
+        self.print_field(self.enemy_field)
 
     def handle_enemy_shot(self, position):
         x, y = position
         if x > 10 or y > 10:
             raise ValueError('Wrong position: %s %s' % (x, y))
 
-        index = self.calc_index(position)
-        if self.field[index] in (SHIP, HIT):
+        if self.field[index] == SHIP:
             self.field[index] = HIT
 
             if self.is_dead_ship(index):
@@ -98,6 +112,8 @@ class BaseGame(object):
                 return 'kill'
             else:
                 return 'hit'
+        elif self.field[index] == HIT:
+            return 'kill' if self.is_dead_ship(index) else 'hit'
         else:
             return 'miss'
 
@@ -221,12 +237,9 @@ class BaseGame(object):
 
         x = bits[0].strip()
         try:
-            x = _try_letter(x)
+            x = _try_number(x)
         except ValueError:
-            try:
-                x = _try_number(x)
-            except ValueError:
-                raise ValueError('Can\'t parse X point: %s' % x)
+            raise ValueError('Can\'t parse X point: %s' % x)
 
         y = bits[1].strip()
         try:

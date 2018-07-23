@@ -11,7 +11,7 @@ from rasa_nlu.data_router import DataRouter
 from seabattle import game
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 router = DataRouter('mldata/')
 MESSAGE_TEMPLATES = {
     'miss': 'Мимо. Я хожу %(shot)s',
@@ -33,6 +33,10 @@ DMResponse = collections.namedtuple('DMResponse', ['key', 'text', 'tts', 'end_se
 
 
 def _get_entity(entities, entity_type):
+    for e in entities:
+        if e['entity'] == entity_type:
+            return e['value']
+    return None
 
     try:
         return next(e['value'] for e in entities if e['entity'] == entity_type)
@@ -107,10 +111,11 @@ class DialogManager(object):
         if self.game is None:
             return self._get_dmresponse_by_key('need_init')
 
-        self.game.handle_enemy_reply('miss')
-        if not entities:
-            return self._get_dmresponse_by_key('dontunderstand')
         enemy_shot = _get_entity(entities, 'hit_entity')
+        if not enemy_shot:
+            return self._get_dmresponse_by_key('dontunderstand')
+
+        self.game.handle_enemy_reply('miss')
         try:
             enemy_position = self.game.convert_to_position(enemy_shot)
             answer = self.game.handle_enemy_shot(enemy_position)
@@ -146,7 +151,6 @@ class DialogManager(object):
     def _handle_dontunderstand(self, message, entities):
         if self.game is None:
             return self._get_dmresponse_by_key('need_init')
-        self.game.reset_last_shot()
 
         if self.last.key in ['miss', 'shot']:
             shot = self.game.repeat()
@@ -167,7 +171,7 @@ class DialogManager(object):
     def handle_message(self, message):
         data = router.extract({'q': message})
         router_response = router.parse(data)
-        logger.error('Router response %s', json.dumps(router_response, indent=2))
+        log.info('Router response %s', json.dumps(router_response, indent=2))
 
         if router_response['intent']['confidence'] < 0.8:
             dmresponse = self._get_dmresponse_by_key('dontunderstand')
@@ -180,4 +184,11 @@ class DialogManager(object):
         if dmresponse.key != 'dontunderstand':
             # сохраняем только последний осмысленный ответ в сессии не затыкались после нескольких повтори
             self._update_session(dmresponse)
+
+        if self.session.get('game') is not None:
+            log.info('My field:')
+            self.session['game'].print_field()
+            log.info('Enemy field:')
+            self.session['game'].print_enemy_field()
+
         return dmresponse
