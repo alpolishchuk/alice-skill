@@ -164,6 +164,8 @@ class BaseGame(object):
 
         elif message == 'miss':
             self.enemy_field[index] = MISS
+            if not self.points_to_shot:
+                self.points_to_shot = [i for i, v in enumerate(self.enemy_field) if v == EMPTY]
             if index in self.points_to_shot:
                 self.points_to_shot.remove(index)
 
